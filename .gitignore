@@ -38,3 +38,6 @@ npm-debug.log
 # Ignore IntelliJ generated files
 .idea
 
+# Personal testing
+/Elixir.Sandbox.beam
+/Sandbox.ex
