@@ -29,3 +29,10 @@ export const getCandidates = async (jobId?: string): Promise<Candidate[]> => {
   const { data } = await response.json()
   return data
 }
+
+export const deleteJob = async (jobId?: string) => {
+    const config = {
+        method: "DELETE"
+    }
+    const response = await fetch(`http://localhost:4000/api/jobs/${jobId}`, config)
+}
