@@ -34,5 +34,14 @@ export const deleteJob = async (jobId?: string) => {
     const config = {
         method: "DELETE"
     }
-    const response = await fetch(`http://localhost:4000/api/jobs/${jobId}`, config)
+    await fetch(`http://localhost:4000/api/jobs/${jobId}`, config)
+}
+
+export const createJob = async (name?: string) => {
+  const config = {
+    method: "POST",
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({"job":{"name":name}})
+  }
+  await fetch(`http://localhost:4000/api/jobs`, config)
 }
