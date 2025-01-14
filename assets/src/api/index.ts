@@ -45,3 +45,12 @@ export const createJob = async (name?: string) => {
   }
   await fetch(`http://localhost:4000/api/jobs`, config)
 }
+
+export const updateCandidate = async (jobId?: string, candidateId?: string, status?: string, position?: number) => {
+  const config = {
+    method: "PATCH",
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({"candidate":{"status":status, "position":position}})
+  }
+  await fetch(`http://localhost:4000/api/jobs/${jobId}/candidates/${candidateId}`, config)
+}
