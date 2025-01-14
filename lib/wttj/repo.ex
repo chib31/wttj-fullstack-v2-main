@@ -1,5 +1,5 @@
 defmodule Wttj.Repo do
-  use Ecto.Repo,
+  use EctoHooks.Repo,
     otp_app: :wttj,
     adapter: Ecto.Adapters.Postgres
 end
