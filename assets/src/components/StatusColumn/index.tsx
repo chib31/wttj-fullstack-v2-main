@@ -16,7 +16,7 @@ export const StatusColumn: React.FC<StatusColumnProps> = ({ id, candidates}) => 
   return (
     <Flex ref={setNodeRef} direction="column" p={10} pb={0}>
       {candidates.map((candidate: Candidate) => (
-        <CandidateCard candidate={candidate}/>
+        <CandidateCard key={candidate.id} candidate={candidate}/>
       ))}
     </Flex>
   );

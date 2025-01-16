@@ -47,7 +47,7 @@ function JobShow() {
         <DndContext onDragEnd={handleDragEnd}>
           <Flex gap={10}>
             {COLUMNS.map(column => (
-              <Box w={300} border={1} backgroundColor="white" borderColor="neutral-30" borderRadius="md">
+              <Box key={column} w={300} border={1} backgroundColor="white" borderColor="neutral-30" borderRadius="md">
                 <Flex p={10} borderBottom={1} borderColor="neutral-30" alignItems="center" justify="space-between">
                   <Text color="black" m={0} textTransform="capitalize">
                     {column}
@@ -65,6 +65,10 @@ function JobShow() {
 
   function handleDragEnd(event: DragOverEvent) {
     const { active, over } = event;
+    if (active == null || over == null) {
+      return null;
+    }
+
     console.log(event);
 
     // Hacky (hopefully temporary) solution to setting the order

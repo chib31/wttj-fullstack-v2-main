@@ -18,7 +18,14 @@ defmodule Wttj.Jobs.Job do
   end
 
   def after_insert(job, _delta) do
+    Logger.info("insert event occurred...")
     WttjWeb.JobChannel.broadcast_update("insert", job)
+    job
+  end
+
+  def after_delete(job, _delta) do
+    Logger.info("delete event occurred...")
+    WttjWeb.JobChannel.broadcast_update("delete", job)
     job
   end
 end

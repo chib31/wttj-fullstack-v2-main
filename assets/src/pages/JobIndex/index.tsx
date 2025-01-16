@@ -52,6 +52,11 @@ function JobIndex() {
       refreshData();
     });
 
+    channel.on("delete", (payload: any) => {
+      console.log("Data update notification received:", payload);
+      refreshData();
+    });
+
     return () => {
       channel.leave();
       socket.disconnect();
