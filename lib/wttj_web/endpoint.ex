@@ -11,7 +11,7 @@ defmodule WttjWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  socket "/live", Phoenix.LiveView.Socket,
+  socket "/socket", WttjWeb.JobSocket,
     websocket: true,
     longpoll: false
 

@@ -3,6 +3,7 @@ defmodule Wttj.Jobs.Job do
   import Ecto.Changeset
   require Logger
 
+  @derive {Jason.Encoder, only: [:name]}
   schema "jobs" do
     field :name, :string
 
@@ -16,8 +17,8 @@ defmodule Wttj.Jobs.Job do
     |> validate_required([:name])
   end
 
-  def after_insert(job, %EctoHooks.Delta{}) do
-    Logger.info(job)
+  def after_insert(job, _delta) do
+    WttjWeb.JobChannel.broadcast_update("insert", job)
     job
   end
 end
