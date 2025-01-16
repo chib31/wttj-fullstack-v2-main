@@ -1,13 +1,15 @@
 import { useParams } from 'react-router-dom'
-import { useJob, useCandidates } from '../../hooks'
+import { useJob } from '../../hooks'
 import { Text } from '@welcome-ui/text'
 import { Flex } from '@welcome-ui/flex'
 import { Box } from '@welcome-ui/box'
 import { useMemo } from 'react'
-import { Candidate, updateCandidate } from '../../api'
+import { Candidate, getCandidates, updateCandidate } from '../../api'
 import { Badge } from '@welcome-ui/badge'
 import { DndContext, DragOverEvent } from '@dnd-kit/core'
 import { StatusColumn } from '../../components/StatusColumn'
+import { useState, useEffect } from "react";
+import { Socket } from "phoenix";
 
 type Statuses = 'new' | 'interview' | 'hired' | 'rejected'
 const COLUMNS: Statuses[] = ['new', 'interview', 'hired', 'rejected']
@@ -22,7 +24,10 @@ interface SortedCandidates {
 function JobShow() {
   const { jobId } = useParams()
   const { job } = useJob(jobId)
-  const { candidates } = useCandidates(jobId)
+
+  const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [isLoading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const sortedCandidates = useMemo(() => {
       if (!candidates) return {}
@@ -34,6 +39,56 @@ function JobShow() {
     },
     [candidates]
   )
+
+  const fetchCandidates = async (jobId?: string) => {
+    console.log("Fetching candidates...");
+    setLoading(true);
+    try {
+      const data = await getCandidates(jobId);
+      setCandidates(data);
+    } catch (error) {
+      console.error("Error fetching candidates:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCandidates(jobId);
+  }, []);
+
+  useEffect(() => {
+    fetchCandidates(jobId);
+  }, [refreshKey]);
+
+  useEffect(() => {
+    const socket = new Socket("ws://localhost:4000/socket");
+    socket.connect();
+
+    const channel = socket.channel("data:all", {});
+    channel.join()
+      .receive("ok", () => console.log("Connected to WebSocket..."))
+      .receive("error", (resp: any) => console.error("Failed to connect to WebSocket", resp));
+
+    channel.on("update", (payload: any) => {
+      console.log("Data update notification received:", payload);
+      refreshData();
+    });
+
+    return () => {
+      channel.leave();
+      socket.disconnect();
+    };
+  }, []);
+
+  const refreshData = () => {
+    console.log("Refreshing data...");
+    setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey to trigger re-fetch
+  };
+
+  if (isLoading) {
+    return null
+  }
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { Link as RouterLink } from 'react-router-dom'
 import { Link } from '@welcome-ui/link'
-import { deleteJob } from '../../api'
+import { deleteJob, getJobs } from '../../api'
 import NewJob from "../../components/NewJob";
 import { useState, useEffect } from "react";
 import { Socket } from "phoenix";
@@ -19,8 +19,7 @@ function JobIndex() {
     console.log("Fetching jobs...");
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:4000/api/jobs`)
-      const { data } = await response.json()
+      const data = await getJobs();
       setJobs(data);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -38,21 +37,15 @@ function JobIndex() {
   }, [refreshKey]);
 
   useEffect(() => {
-    console.log("Listening for changes...");
     const socket = new Socket("ws://localhost:4000/socket");
     socket.connect();
 
-    const channel = socket.channel("jobs:all", {});
+    const channel = socket.channel("data:all", {});
     channel.join()
-      .receive("ok", () => console.log("Connected to WebSocket"))
-      .receive("error", (resp: any) => console.error("Failed to connect", resp));
+      .receive("ok", () => console.log("Connected to WebSocket..."))
+      .receive("error", (resp: any) => console.error("Failed to connect to WebSocket", resp));
 
-    channel.on("insert", (payload: any) => {
-      console.log("Data update notification received:", payload);
-      refreshData();
-    });
-
-    channel.on("delete", (payload: any) => {
+    channel.on("update", (payload: any) => {
       console.log("Data update notification received:", payload);
       refreshData();
     });

@@ -1,7 +1,7 @@
-defmodule WttjWeb.JobSocket do
+defmodule WttjWeb.DataSocket do
   use Phoenix.Socket
 
-  channel "jobs:all", WttjWeb.JobChannel
+  channel "data:all", WttjWeb.DataChannel
   @impl true
   def connect(_params, socket, _connect_info) do
     {:ok, socket}

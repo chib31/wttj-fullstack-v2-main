@@ -11,7 +11,7 @@ defmodule WttjWeb.Endpoint do
     same_site: "Lax"
   ]
 
-  socket "/socket", WttjWeb.JobSocket,
+  socket "/socket", WttjWeb.DataSocket,
     websocket: true,
     longpoll: false
 
