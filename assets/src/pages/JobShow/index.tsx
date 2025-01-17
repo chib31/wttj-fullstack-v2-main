@@ -124,19 +124,8 @@ function JobShow() {
       if (overCandidate == undefined) {
         return null;
       }
-      const overPosition = overCandidate.position;
-      const candidatesInColumn = sortedCandidates[active.status as Statuses] || [];
-      for (const c of candidatesInColumn) {
-        if (c.position >= overPosition) {
-          // move everything else down
-          if (c.status === active.status && c.position < active.position) {
-            // if moved from same different column no need to move candidates if already lower
-            updateCandidate(jobId, c.id.toString(), c.status, c.position + 1);
-          }
-        }
-      }
-      updateCandidate(jobId, active.id.toString(), overCandidate.status, overPosition - 0.5);
-
+      const prePosition = overCandidate.position - 0.5;
+      updateCandidate(jobId, active.id.toString(), overCandidate.status, prePosition);
     }
   }
 
@@ -150,11 +139,12 @@ function JobShow() {
       const candidatesInColumn = sortedCandidates[newStatus] || [];
       let lastPosition: number;
       if (candidatesInColumn.length == 0) {
-        lastPosition = 0;
+        lastPosition = 0.5;
       } else {
         lastPosition = Math.max(...candidatesInColumn.map((c: { position: any }) => c.position));
       }
-      updateCandidate(jobId, active.id as string, newStatus, lastPosition + 1);
+      console.log('updating to position: ' + (lastPosition + 0.5));
+      updateCandidate(jobId, active.id as string, newStatus, lastPosition + 0.5);
     }
   }
 

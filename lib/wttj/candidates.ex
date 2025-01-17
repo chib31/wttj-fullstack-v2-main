@@ -121,7 +121,7 @@ defmodule Wttj.Candidates do
 
     # Execute the update
     case Repo.update_all(update_query, []) do
-      {count, nil} ->
+      {count, _} ->
         Logger.info("#{count} rows updated successfully")
         :ok
 

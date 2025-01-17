@@ -12,6 +12,5 @@ defmodule Wttj.Repo.Migrations.CreateCandidates do
     end
 
     create index(:candidates, [:job_id])
-    create unique_index(:candidates, [:job_id, :position, :status])
   end
 end
