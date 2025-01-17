@@ -89,6 +89,14 @@ defmodule Wttj.Candidates do
     Candidate.changeset(candidate, attrs)
   end
 
+  @doc """
+  Reorders all candidates for a given jobId and status, by ordering by position, then updating the value of each
+  position to be the row number. This results in neat, integer position values with no gaps.
+
+  ## Examples
+
+      iex> reorder_positions(jobId: 1, status: new)
+  """
   def reorder_positions(jobId, status) do
 
     # Subquery to calculate the new positions using ROW_NUMBER()
@@ -113,13 +121,12 @@ defmodule Wttj.Candidates do
 
     # Execute the update
     case Repo.update_all(update_query, []) do
-      {count, _} ->
+      {count, nil} ->
         Logger.info("#{count} rows updated successfully")
         :ok
 
       {:error, reason} ->
         Logger.info(reason, label: "Update Error")
-        {:error, reason}
     end
   end
 end

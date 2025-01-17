@@ -14,7 +14,7 @@ defmodule Wttj.CandidatesFixtures do
       attrs
       |> Enum.into(%{
         email: unique_user_email(),
-        position: 42
+        position: 42.0
       })
       |> Wttj.Candidates.create_candidate()
 

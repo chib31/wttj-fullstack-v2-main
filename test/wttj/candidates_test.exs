@@ -25,7 +25,7 @@ defmodule Wttj.CandidatesTest do
 
     test "create_candidate/1 with valid data creates a candidate", %{job1: job1} do
       email = unique_user_email()
-      valid_attrs = %{email: email, position: 3, job_id: job1.id}
+      valid_attrs = %{email: email, position: 3.0, job_id: job1.id}
       assert {:ok, %Candidate{} = candidate} = Candidates.create_candidate(valid_attrs)
       assert candidate.email == email
       assert {:error, _} = Candidates.create_candidate()
@@ -34,12 +34,12 @@ defmodule Wttj.CandidatesTest do
     test "update_candidate/2 with valid data updates the candidate", %{job1: job1} do
       candidate = candidate_fixture(%{job_id: job1.id})
       email = unique_user_email()
-      update_attrs = %{position: 43, status: :rejected, email: email}
+      update_attrs = %{position: 43.0, status: :rejected, email: email}
 
       assert {:ok, %Candidate{} = candidate} =
                Candidates.update_candidate(candidate, update_attrs)
 
-      assert candidate.position == 43
+      assert candidate.position == 43.0
       assert candidate.status == :rejected
       assert candidate.email == email
     end
