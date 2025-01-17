@@ -24,4 +24,14 @@ defmodule WttjWeb.CandidateController do
       render(conn, :show, candidate: candidate)
     end
   end
+
+  def create(conn, %{"candidate" => candidate_params}) do
+    with {:ok, %Candidate{} = candidate} <- Candidates.create_candidate(candidate_params) do
+      conn
+      |> put_status(:created)
+      |> put_resp_header("location", ~p"/api/~/candidates/#{candidate}")
+      |> render(:show, candidate: candidate)
+    end
+  end
+
 end

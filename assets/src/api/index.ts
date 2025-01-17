@@ -54,3 +54,12 @@ export const updateCandidate = async (jobId?: string, candidateId?: string, stat
   }
   await fetch(`http://localhost:4000/api/jobs/${jobId}/candidates/${candidateId}`, config)
 }
+
+export const createCandidate = async (jobId?: string, email?: string, position?: number) => {
+  const config = {
+    method: "POST",
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({"candidate":{"job_id": jobId, "email": email, "position": position}})
+  }
+  await fetch(`http://localhost:4000/api/jobs/${jobId}/candidates/`, config)
+}

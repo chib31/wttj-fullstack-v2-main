@@ -11,6 +11,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useState, useEffect } from "react";
 import { Socket } from "phoenix";
 import { StatusColumn } from "../../components/StatusColumn";
+import { NewCandidate } from "../../components/NewCandidate";
 
 type Statuses = 'new' | 'interview' | 'hired' | 'rejected'
 const COLUMNS: Statuses[] = ['new', 'interview', 'hired', 'rejected']
@@ -157,6 +158,15 @@ function JobShow() {
     }
   }
 
+  function nextNewPosition() {
+    const candidatesInNew = sortedCandidates["new" as Statuses];
+    if (candidatesInNew == undefined) {
+      return 1;
+    }
+    const lastPosition = Math.max(...candidatesInNew.map((c: { position: any }) => c.position));
+    return lastPosition || 0;
+  }
+
   return (
     <>
       <Box backgroundColor="neutral-70" p={20} alignItems="center">
@@ -175,6 +185,9 @@ function JobShow() {
             ))}
           </Flex>
         </DndContext>
+      </Box>
+      <Box pl={20}>
+        <NewCandidate jobId={jobId} nextPosition={nextNewPosition()}/>
       </Box>
     </>
   )
