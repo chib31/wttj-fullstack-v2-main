@@ -45,8 +45,8 @@ function JobIndex() {
       .receive("ok", () => console.log("Connected to WebSocket..."))
       .receive("error", (resp: any) => console.error("Failed to connect to WebSocket", resp));
 
-    channel.on("update", (payload: any) => {
-      console.log("Data update notification received:", payload);
+    channel.on("update", (_payload: any) => {
+      console.log("Data update notification received");
       refreshData();
     });
 
@@ -57,7 +57,6 @@ function JobIndex() {
   }, []);
 
   const refreshData = () => {
-    console.log("Refreshing data...");
     setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey to trigger re-fetch
   };
 

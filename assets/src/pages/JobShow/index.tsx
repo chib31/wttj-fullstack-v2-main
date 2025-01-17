@@ -5,11 +5,12 @@ import { Flex } from '@welcome-ui/flex'
 import { Box } from '@welcome-ui/box'
 import { useMemo } from 'react'
 import { Candidate, getCandidates, updateCandidate } from '../../api'
-import { Badge } from '@welcome-ui/badge'
-import { DndContext, DragOverEvent } from '@dnd-kit/core'
-import { StatusColumn } from '../../components/StatusColumn'
+import { DndContext, DragOverEvent, closestCenter, useSensors, useSensor, KeyboardSensor, PointerSensor }
+  from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useState, useEffect } from "react";
 import { Socket } from "phoenix";
+import { StatusColumn } from "../../components/StatusColumn";
 
 type Statuses = 'new' | 'interview' | 'hired' | 'rejected'
 const COLUMNS: Statuses[] = ['new', 'interview', 'hired', 'rejected']
@@ -24,6 +25,10 @@ interface SortedCandidates {
 function JobShow() {
   const { jobId } = useParams()
   const { job } = useJob(jobId)
+
+  if (jobId == null) {
+    return null;
+  }
 
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [isLoading, setLoading] = useState(false);
@@ -41,7 +46,6 @@ function JobShow() {
   )
 
   const fetchCandidates = async (jobId?: string) => {
-    console.log("Fetching candidates...");
     setLoading(true);
     try {
       const data = await getCandidates(jobId);
@@ -70,8 +74,8 @@ function JobShow() {
       .receive("ok", () => console.log("Connected to WebSocket..."))
       .receive("error", (resp: any) => console.error("Failed to connect to WebSocket", resp));
 
-    channel.on("update", (payload: any) => {
-      console.log("Data update notification received:", payload);
+    channel.on("update", (_payload: any) => {
+      console.log("Data update notification received:");
       refreshData();
     });
 
@@ -82,12 +86,75 @@ function JobShow() {
   }, []);
 
   const refreshData = () => {
-    console.log("Refreshing data...");
     setRefreshKey((prevKey) => prevKey + 1); // Increment refreshKey to trigger re-fetch
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   if (isLoading) {
     return null
+  }
+
+  function handleDragEnd(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const overId = over.id;
+
+    if (typeof overId === "string") {
+      handleMoveColumn(active, overId as Statuses);
+    } else {
+      handleReorderColumn(active, overId as number);
+    }
+  }
+
+  function handleReorderColumn(active: any, overId: number) {
+    if (active.id === overId) {
+      return null;
+
+    } else {
+      // dragged over a specific candidate
+      const overCandidate = candidates.find(c => c.id === overId);
+      if (overCandidate == undefined) {
+        return null;
+      }
+      const overPosition = overCandidate.position;
+      const candidatesInColumn = sortedCandidates[active.status as Statuses] || [];
+      for (const c of candidatesInColumn) {
+        if (c.position >= overPosition) {
+          // move everything else down
+          if (c.status === active.status && c.position < active.position) {
+            // if moved from same different column no need to move candidates if already lower
+            updateCandidate(jobId, c.id.toString(), c.status, c.position + 1);
+          }
+        }
+      }
+      updateCandidate(jobId, active.id.toString(), overCandidate.status, overPosition - 0.5);
+
+    }
+  }
+
+  function handleMoveColumn(active: any, newStatus: Statuses) {
+    if (active.status === newStatus) {
+      // same column, no change
+      return null;
+
+    } else {
+      // wasn't dragged into a specific location, so just calculate next available position
+      const candidatesInColumn = sortedCandidates[newStatus] || [];
+      let lastPosition: number;
+      if (candidatesInColumn.length == 0) {
+        lastPosition = 0;
+      } else {
+        lastPosition = Math.max(...candidatesInColumn.map((c: { position: any }) => c.position));
+      }
+      updateCandidate(jobId, active.id as string, newStatus, lastPosition + 1);
+    }
   }
 
   return (
@@ -99,38 +166,18 @@ function JobShow() {
       </Box>
 
       <Box p={20}>
-        <DndContext onDragEnd={handleDragEnd}>
+        <DndContext onDragEnd={handleDragEnd}
+                    collisionDetection={closestCenter}
+                    sensors={sensors}>
           <Flex gap={10}>
             {COLUMNS.map(column => (
-              <Box key={column} w={300} border={1} backgroundColor="white" borderColor="neutral-30" borderRadius="md">
-                <Flex p={10} borderBottom={1} borderColor="neutral-30" alignItems="center" justify="space-between">
-                  <Text color="black" m={0} textTransform="capitalize">
-                    {column}
-                  </Text>
-                  <Badge>{(sortedCandidates[column] || []).length}</Badge>
-                </Flex>
-                <StatusColumn id={column} key={column} candidates={sortedCandidates[column] || []}/>
-              </Box>
+              <StatusColumn key={column} column={column} candidates={sortedCandidates[column] || []}/>
             ))}
           </Flex>
         </DndContext>
       </Box>
     </>
   )
-
-  function handleDragEnd(event: DragOverEvent) {
-    const { active, over } = event;
-    if (active == null || over == null) {
-      return null;
-    }
-
-    console.log(event);
-
-    // Hacky (hopefully temporary) solution to setting the order
-    const lastPosition = Math.max(...sortedCandidates[over.id].map((c: { position: any }) => c.position));
-    console.log(lastPosition);
-    updateCandidate(job.id, active.id, over.id, lastPosition + 1);
-  }
 }
 
 export default JobShow

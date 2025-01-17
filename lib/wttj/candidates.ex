@@ -1,4 +1,6 @@
 defmodule Wttj.Candidates do
+  require Logger
+
   @moduledoc """
   The Candidates context.
   """
@@ -85,5 +87,39 @@ defmodule Wttj.Candidates do
   """
   def change_candidate(%Candidate{} = candidate, attrs \\ %{}) do
     Candidate.changeset(candidate, attrs)
+  end
+
+  def reorder_positions(status) do
+
+    # Subquery to calculate the new positions using ROW_NUMBER()
+    subquery =
+      from c in Candidate,
+           where: c.status == ^status,
+           select: %{
+             id: c.id,
+             row_number: fragment("ROW_NUMBER() OVER (ORDER BY ?)", c.position)
+           }
+    Logger.info("subquery fetched...");
+
+    # Now join onto the subquery results and replace position with a nice ordered integer
+    update_query =
+      from c in Candidate,
+           where: c.status == ^status,
+           join: s in subquery(subquery),
+           on: s.id == c.id,
+           update: [set: [position: s.row_number]]
+
+    Logger.info("update query run...");
+
+    # Execute the update
+    case Repo.update_all(update_query, []) do
+      {count, _} ->
+        Logger.info("#{count} rows updated successfully")
+        :ok
+
+      {:error, reason} ->
+        Logger.info(reason, label: "Update Error")
+        {:error, reason}
+    end
   end
 end

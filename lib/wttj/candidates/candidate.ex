@@ -4,7 +4,7 @@ defmodule Wttj.Candidates.Candidate do
 
   @derive {Jason.Encoder, only: [:position, :status, :email, :job_id]}
   schema "candidates" do
-    field :position, :integer
+    field :position, :float
     field :status, Ecto.Enum, values: [:new, :interview, :rejected, :hired], default: :new
     field :email, :string
     field :job_id, :id
@@ -19,18 +19,19 @@ defmodule Wttj.Candidates.Candidate do
     |> validate_required([:email, :status, :position, :job_id])
   end
 
-  def after_insert(job, _delta) do
-    WttjWeb.DataChannel.broadcast_update("update", job)
-    job
+  def after_insert(candidate, _delta) do
+    WttjWeb.DataChannel.broadcast_update("update", candidate)
+    candidate
   end
 
-  def after_delete(job, _delta) do
-    WttjWeb.DataChannel.broadcast_update("update", job)
-    job
+  def after_delete(candidate, _delta) do
+    WttjWeb.DataChannel.broadcast_update("update", candidate)
+    candidate
   end
 
-  def after_update(job, _delta) do
-    WttjWeb.DataChannel.broadcast_update("update", job)
-    job
+  def after_update(candidate, _delta) do
+    Wttj.Candidates.reorder_positions(candidate.status)
+    WttjWeb.DataChannel.broadcast_update("update", candidate)
+    candidate
   end
 end
