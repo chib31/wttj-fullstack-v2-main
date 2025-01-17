@@ -89,12 +89,13 @@ defmodule Wttj.Candidates do
     Candidate.changeset(candidate, attrs)
   end
 
-  def reorder_positions(status) do
+  def reorder_positions(jobId, status) do
 
     # Subquery to calculate the new positions using ROW_NUMBER()
     subquery =
       from c in Candidate,
            where: c.status == ^status,
+           where: c.job_id == ^jobId,
            select: %{
              id: c.id,
              row_number: fragment("ROW_NUMBER() OVER (ORDER BY ?)", c.position)
@@ -104,7 +105,6 @@ defmodule Wttj.Candidates do
     # Now join onto the subquery results and replace position with a nice ordered integer
     update_query =
       from c in Candidate,
-           where: c.status == ^status,
            join: s in subquery(subquery),
            on: s.id == c.id,
            update: [set: [position: s.row_number]]

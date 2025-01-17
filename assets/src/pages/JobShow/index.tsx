@@ -163,8 +163,7 @@ function JobShow() {
     if (candidatesInNew == undefined) {
       return 1;
     }
-    const lastPosition = Math.max(...candidatesInNew.map((c: { position: any }) => c.position));
-    return lastPosition || 0;
+    return Math.max(...candidatesInNew.map((c: { position: any }) => c.position)) + 1;
   }
 
   return (

@@ -30,7 +30,7 @@ defmodule Wttj.Candidates.Candidate do
   end
 
   def after_update(candidate, _delta) do
-    Wttj.Candidates.reorder_positions(candidate.status)
+    Wttj.Candidates.reorder_positions(candidate.job_id, candidate.status)
     WttjWeb.DataChannel.broadcast_update("update", candidate)
     candidate
   end

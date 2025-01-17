@@ -12,7 +12,7 @@ function CandidateCard({ candidate }: { candidate: Candidate }) {
 
   return (
     <Card ref={setNodeRef} style={style} {...listeners} {...attributes} mb={10}>
-      <Card.Body>{candidate.position} - {candidate.email}</Card.Body>
+      <Card.Body>{candidate.email}</Card.Body>
     </Card>
   )
 }
