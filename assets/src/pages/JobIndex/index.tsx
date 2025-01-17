@@ -1,5 +1,8 @@
 import { Link as RouterLink } from 'react-router-dom'
 import { Link } from '@welcome-ui/link'
+import { Box } from '@welcome-ui/box'
+import { Button } from '@welcome-ui/button'
+import { TrashIcon } from '@welcome-ui/icons'
 import { deleteJob, getJobs } from '../../api'
 import NewJob from "../../components/NewJob";
 import { useState, useEffect } from "react";
@@ -66,17 +69,27 @@ function JobIndex() {
 
   return (
     <>
-      <NewJob/>
       <ul>
         {jobs?.map(job =>
           <li key={job.id}>
             <Link as={RouterLink} to={`/jobs/${job.id}`}>
               {job.name}
             </Link>
-            <button onClick={() => deleteJob(job.id)}>Delete</button>
+            <Button
+              danger
+              shape="circle"
+              size="xs"
+              variant="tertiary"
+              ml={10}
+              onClick={() => deleteJob(job.id)}>
+              <TrashIcon/>
+            </Button>
           </li>
         )}
       </ul>
+      <Box pl={20}>
+        <NewJob/>
+      </Box>
     </>
   )
 }
